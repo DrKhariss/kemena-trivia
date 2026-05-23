@@ -33,7 +33,7 @@ import ric from '../assets/ric.jpg';
 import tempoe from '../assets/tempoe.jpg';
 import wts from '../assets/wts.png';
 import oxygen from '../assets/oxygen.jpeg';
-import battleMusic from '../assets/battle1-music.mp3';
+import battleMusic from '../assets/battle-music.mp3';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -366,9 +366,11 @@ export default function Home() {
   useEffect(() => {
     const audio = new Audio(battleMusic);
     audio.loop = true;
+    let fallbackPlayingState = false;
     
     const playAudio = () => {
       audio.play().then(() => {
+        fallbackPlayingState = true;
         // Successfully played, remove event listeners as they are no longer needed
         document.removeEventListener('click', playAudio);
         document.removeEventListener('touchstart', playAudio);
@@ -386,11 +388,30 @@ export default function Home() {
     document.addEventListener('touchstart', playAudio);
     document.addEventListener('keydown', playAudio);
 
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        audio.pause();
+      } else {
+        // Try to resume playing immediately when visible again
+        audio.play().then(() => {
+          // If successfully played on visibility change, remove the user interaction fallbacks
+          document.removeEventListener('click', playAudio);
+          document.removeEventListener('touchstart', playAudio);
+          document.removeEventListener('keydown', playAudio);
+        }).catch((err) => {
+          console.log('Failed to resume playing on tab focus:', err);
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       audio.pause();
       document.removeEventListener('click', playAudio);
       document.removeEventListener('touchstart', playAudio);
       document.removeEventListener('keydown', playAudio);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
