@@ -13,6 +13,7 @@ import Trivia from './components/Trivia';
 import Leaderboard from './components/Leaderboard';
 import AdminNews from './components/AdminNews';
 import { ThemeProvider } from './context/ThemeContext';
+import battleMusic from './assets/battle-music.mp3';
 
 export default function App() {
   const [username, setUsername] = useState('');
@@ -22,26 +23,33 @@ export default function App() {
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.play().catch(err => {
-        console.warn("Audio playback failed. User interaction might be required.", err);
+        console.log("Initial autoplay prevented by browser. Hooking global interaction triggers.", err);
       });
       
       const handleUserInteraction = () => {
-        if (audioRef.current?.paused) {
+        if (audioRef.current?.paused && isMusicRequested) {
           audioRef.current.play().catch(() => {});
         }
+        removeInteractionListeners();
+      };
+
+      const removeInteractionListeners = () => {
         window.removeEventListener('click', handleUserInteraction);
+        window.removeEventListener('touchstart', handleUserInteraction);
+        window.removeEventListener('keydown', handleUserInteraction);
         window.removeEventListener('scroll', handleUserInteraction);
       };
 
       window.addEventListener('click', handleUserInteraction);
+      window.addEventListener('touchstart', handleUserInteraction);
+      window.addEventListener('keydown', handleUserInteraction);
       window.addEventListener('scroll', handleUserInteraction);
 
       return () => {
-        window.removeEventListener('click', handleUserInteraction);
-        window.removeEventListener('scroll', handleUserInteraction);
+        removeInteractionListeners();
       };
     }
-  }, []);
+  }, [isMusicRequested]);
 
   useEffect(() => {
     if (audioRef.current) {
@@ -54,17 +62,23 @@ export default function App() {
   }, [isMusicRequested]);
 
   useEffect(() => {
-    // Stop music when user leaves the website (tab hidden)
+    // Automatically pause on tab hide / minimize / offscreen, and resume on tab display
     const handleVisibilityChange = () => {
-      if (document.hidden) {
-        audioRef.current?.pause();
-      } else if (isMusicRequested) {
-        audioRef.current?.play().catch(() => {});
+      if (audioRef.current) {
+        if (document.hidden) {
+          audioRef.current.pause();
+        } else if (isMusicRequested) {
+          audioRef.current.play().catch(err => {
+            console.log("Unable to automatically resume playback on tab active:", err);
+          });
+        }
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [isMusicRequested]);
 
   return (
@@ -76,7 +90,7 @@ export default function App() {
           
           {/* Tactical Audio Feed (MP3 Orchestrator) */}
           <div className="hidden">
-            <audio ref={audioRef} src="/src/assets/battle-music.mp3" loop />
+            <audio ref={audioRef} src={battleMusic} loop />
           </div>
 
           <div className="main-wrapper">
