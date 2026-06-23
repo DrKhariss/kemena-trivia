@@ -54,7 +54,7 @@ interface Artist {
 export default function Home() {
   const { theme } = useTheme();
   const [config, setConfig] = useState<ConfigData>({
-    heroImageUrl: '../assets/profilepic.JPG',
+    heroImageUrl: 'src/assets/profilepic.JPG',
     bioText: 'Welcome to the world of Kemena. Exploring the rich intersections of Afro-fusion rhythms and futuristic soundscapes. Every beat is a journey into the soul of modern African music.',
   });
   const [artists, setArtists] = useState<Artist[]>([
