@@ -35,6 +35,7 @@ import oxygen from '../assets/oxygen.jpg';
 import dwin from '../assets/dwin.jpg'
 import mavin from '../assets/mavin.jpg'
 import chocolatecity from '../assets/chocolatecity.jpg'
+import profilepic from '../assets/profilepic.jpeg'
 
 // Import Swiper styles
 import 'swiper/css';
@@ -54,7 +55,7 @@ interface Artist {
 export default function Home() {
   const { theme } = useTheme();
   const [config, setConfig] = useState<ConfigData>({
-    heroImageUrl: 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?q=80&w=2070&auto=format&fit=crop',
+    heroImageUrl: profilepic,
     bioText: 'Welcome to the world of Kemena. Exploring the rich intersections of Afro-fusion rhythms and futuristic soundscapes. Every beat is a journey into the soul of modern African music.',
   });
   const [artists, setArtists] = useState<Artist[]>([
