@@ -31,8 +31,10 @@ import laycon from '../assets/laycon.jpg';
 import odu from '../assets/odu.jpg';
 import ric from '../assets/ric.jpg';
 import tempoe from '../assets/tempoe.jpg';
-import wts from '../assets/wts.png';
-import oxygen from '../assets/oxygen.jpeg';
+import oxygen from '../assets/oxygen.jpg';
+import dwin from '../assets/dwin.jpg'
+import mavin from '../assets/mavin.jpg'
+import chocolatecity from '../assets/chocolatecity.jpg'
 
 // Import Swiper styles
 import 'swiper/css';
@@ -64,10 +66,9 @@ export default function Home() {
     { name: 'Laycon', imageUrl: laycon },
     { name: 'Tempoe', imageUrl: tempoe },
     { name: 'Oxygenmix', imageUrl: oxygen },
-    { name: 'Elmah', imageUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=2070&auto=format&fit=crop' },
-    { name: 'Noon Dave', imageUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=2070&auto=format&fit=crop' },
-    { name: 'Jibo', imageUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=2070&auto=format&fit=crop' },
-    { name: 'wetalksound', imageUrl: wts }
+    { name: 'Dwin, The Stoic', imageUrl: dwin },
+    { name: 'Chocolate City', imageUrl: chocolatecity },
+    { name: 'Mavin Records', imageUrl: mavin },
   ]);
 
   const albumArt = [
@@ -508,7 +509,7 @@ export default function Home() {
               >
                 {/* Render the list 4 times for seamless infinite loop */}
                 {[...albumArt, ...albumArt, ...albumArt, ...albumArt].map((album, i) => (
-                   <div key={i} className="flex-shrink-0 w-[240px] sm:w-[320px] lg:w-[400px] group cursor-pointer">
+                  <div key={i} className="flex-shrink-0 w-[240px] sm:w-[280px] lg:w-[320px] group cursor-pointer">
                     <a 
                       href={album.url} 
                       target="_blank" 
@@ -598,7 +599,7 @@ export default function Home() {
               >
                 {/* Render the list 4 times for seamless infinite loop */}
                 {[...artists, ...artists, ...artists, ...artists].map((artist, i) => (
-                   <div key={i} className="flex-shrink-0 w-[240px] sm:w-[320px] lg:w-[400px] group cursor-pointer"
+                   <div key={i} className="flex-shrink-0 w-[240px] sm:w-[280px] lg:w-[320px] group cursor-pointer"
                      onClick={(e) => {
                        if (isLegionDraggingRef.current) {
                          e.preventDefault();
