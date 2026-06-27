@@ -9,8 +9,7 @@ service cloud.firestore {
     function isEmailVerified() { return request.auth.token.email_verified == true; }
     function isAdmin() { 
       return isSignedIn() && 
-             isEmailVerified() && 
-             request.auth.token.email == 'chukwuebukankemena@gmail.com'; 
+             (request.auth.token.email == 'chukwuebukankemena@gmail.com' || request.auth.token.email == 'admin@kemena.com'); 
     }
 
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
@@ -18,10 +17,11 @@ service cloud.firestore {
     function existing() { return resource.data; }
 
     function isValidConfig(data) {
-      return data.keys().hasAll(['heroImageUrl', 'bioText', 'updatedAt']) &&
-             data.keys().size() == 3 &&
+      return data.keys().hasAll(['heroImageUrl', 'bioText', 'battleMusicUrl', 'updatedAt']) &&
+             data.keys().size() == 4 &&
              data.heroImageUrl is string &&
              data.bioText is string && data.bioText.size() <= 2000 &&
+             data.battleMusicUrl is string && data.battleMusicUrl.size() <= 2000 &&
              data.updatedAt is timestamp;
     }
 

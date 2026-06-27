@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Save, Loader2, LogIn, LogOut, Shield, AlertTriangle, Image as ImageIcon, FileText } from 'lucide-react';
+import { Save, Loader2, LogIn, LogOut, Shield, AlertTriangle, Image as ImageIcon, FileText, Music } from 'lucide-react';
 import { motion } from 'motion/react';
 import { 
   doc, 
@@ -8,24 +8,28 @@ import {
   serverTimestamp,
   getDoc
 } from 'firebase/firestore';
-import { signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { db, auth } from '../lib/firebase';
 
-const ADMIN_EMAIL = 'chukwuebukankemena@gmail.com';
+const ADMIN_EMAILS = ['chukwuebukankemena@gmail.com', 'admin@kemena.com'];
 
 interface ConfigData {
   heroImageUrl: string;
   bioText: string;
+  battleMusicUrl: string;
 }
 
 export default function AdminConsole() {
   const [config, setConfig] = useState<ConfigData>({
     heroImageUrl: '',
     bioText: '',
+    battleMusicUrl: '',
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [user, setUser] = useState<User | null>(auth.currentUser);
 
   useEffect(() => {
@@ -40,6 +44,7 @@ export default function AdminConsole() {
         setConfig({
           heroImageUrl: data.heroImageUrl || '',
           bioText: data.bioText || '',
+          battleMusicUrl: data.battleMusicUrl || '',
         });
       }
       setLoading(false);
@@ -55,12 +60,24 @@ export default function AdminConsole() {
   }, []);
 
   const handleLogin = async () => {
+    if (username !== 'admin' || password !== 'kemenaconsole123') {
+      setMessage('ERROR: INVALID_CREDENTIALS');
+      return;
+    }
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      console.error(err);
-      setMessage('ERROR: LOGIN_FAILED');
+      await signInWithEmailAndPassword(auth, 'admin@kemena.com', password);
+    } catch (err: any) {
+      if (err.code === 'auth/user-not-found') {
+        try {
+          await createUserWithEmailAndPassword(auth, 'admin@kemena.com', password);
+        } catch (createErr) {
+          console.error(createErr);
+          setMessage('ERROR: ACCOUNT_CREATION_FAILED');
+        }
+      } else {
+        console.error(err);
+        setMessage('ERROR: LOGIN_FAILED');
+      }
     }
   };
 
@@ -85,7 +102,7 @@ export default function AdminConsole() {
   };
 
   const handleSave = async () => {
-    if (!user || user.email !== ADMIN_EMAIL) {
+    if (!user || !ADMIN_EMAILS.includes(user.email || '')) {
       setMessage('ERROR: INSUFFICIENT_PERMISSIONS');
       return;
     }
@@ -104,6 +121,7 @@ export default function AdminConsole() {
       await setDoc(doc(db, 'config', 'mainPage'), {
         heroImageUrl: config.heroImageUrl,
         bioText: config.bioText,
+        battleMusicUrl: config.battleMusicUrl,
         updatedAt: serverTimestamp()
       });
 
@@ -124,7 +142,7 @@ export default function AdminConsole() {
     </div>
   );
 
-  if (!user || user.email !== ADMIN_EMAIL) {
+  if (!user || !ADMIN_EMAILS.includes(user.email || '')) {
     return (
       <div className="max-w-4xl mx-auto py-12 sm:py-24 px-4 sm:px-6 text-center">
         <motion.div 
@@ -137,9 +155,25 @@ export default function AdminConsole() {
           <p className="font-mono text-[11px] text-army-light uppercase tracking-widest mb-8">
             Signal restricted to #KEMENA_HIGH_COMMAND authorized relay nodes only.
           </p>
+          <div className="flex flex-col gap-4 mb-8">
+            <input 
+              type="text" 
+              placeholder="USERNAME" 
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full max-w-sm mx-auto bg-white/5 border border-white/10 px-4 py-3 font-mono text-[11px] text-tactical-cyan focus:outline-none focus:border-tactical-amber text-center"
+            />
+            <input 
+              type="password" 
+              placeholder="PASSWORD" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full max-w-sm mx-auto bg-white/5 border border-white/10 px-4 py-3 font-mono text-[11px] text-tactical-cyan focus:outline-none focus:border-tactical-amber text-center"
+            />
+          </div>
           <button 
             onClick={handleLogin}
-            className="flex items-center gap-3 bg-tactical-cyan text-army-dark px-8 py-3 mx-auto font-mono text-[11px] uppercase font-bold hover:bg-tactical-amber hover:text-white transition-all active:scale-95"
+            className="flex items-center justify-center gap-3 bg-tactical-cyan text-army-dark px-8 py-3 mx-auto font-mono text-[11px] uppercase font-bold hover:bg-tactical-amber hover:text-white transition-all active:scale-95 w-full max-w-sm"
           >
             <LogIn size={18} /> AUTHENTICATE_OPERATOR
           </button>
@@ -154,6 +188,10 @@ export default function AdminConsole() {
                 TERMINATE_SIGNAL
               </button>
             </div>
+          )}
+          
+          {message && (
+             <div className="mt-6 text-red-500 font-mono text-[10px] uppercase tracking-widest">{message}</div>
           )}
         </motion.div>
       </div>
@@ -238,6 +276,25 @@ export default function AdminConsole() {
               rows={8}
               placeholder="ENTER_ARTIST_BIOGRAPHY_HERE..."
               className="w-full bg-white/5 border border-white/10 px-6 py-4 font-mono text-[13px] leading-relaxed text-tactical-cyan focus:outline-none focus:border-tactical-amber transition-colors resize-none"
+            />
+          </div>
+        </div>
+
+        {/* Battle Music Section */}
+        <div className="bg-black/20 border border-white/5 p-5 sm:p-8 backdrop-blur-sm">
+          <div className="flex items-center gap-3 mb-8">
+            <Music size={20} className="text-tactical-cyan" />
+            <h2 className="font-mono text-xs uppercase font-bold tracking-widest text-tactical-cyan">BATTLE_MUSIC_FEED</h2>
+          </div>
+
+          <div className="space-y-4">
+            <div className="hud-label">AUDIO SOURCE URL (MP3/WAV)</div>
+            <input 
+              type="text" 
+              value={config.battleMusicUrl}
+              onChange={(e) => setConfig({ ...config, battleMusicUrl: e.target.value })}
+              placeholder="ENTER_AUDIO_URL_HERE..."
+              className="w-full bg-white/5 border border-white/10 px-6 py-4 font-mono text-[13px] text-tactical-cyan focus:outline-none focus:border-tactical-amber transition-colors"
             />
           </div>
         </div>

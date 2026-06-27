@@ -1,57 +1,49 @@
-import express from 'express';
-import { createServer as createViteServer } from 'vite';
-import path from 'path';
-
-const app = express();
-const DEFAULT_PORT = 3000;
-const requestedPort = Number(process.env.PORT);
-const initialPort = Number.isNaN(requestedPort) ? DEFAULT_PORT : requestedPort;
-
-app.use(express.json());
-
-// API health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
-function startListening(port: number): Promise<number> {
-  return new Promise((resolve, reject) => {
-    const server = app.listen(port, '0.0.0.0', () => {
-      console.log(`Server running on http://localhost:${port}`);
-      resolve(port);
-    });
-
-    server.on('error', (error: NodeJS.ErrnoException) => {
-      if (error.code === 'EADDRINUSE') {
-        const nextPort = port + 1;
-        console.warn(`Port ${port} is already in use. Trying ${nextPort}...`);
-        startListening(nextPort).then(resolve).catch(reject);
-      } else {
-        reject(error);
-      }
-    });
-  });
-}
-
-async function startServer() {
-  if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa',
-    });
-    app.use(vite.middlewares);
-  } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+{
+  "name": "react-example",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "vite build",
+    "preview": "vite preview",
+    "clean": "rm -rf dist",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@emailjs/browser": "^4.4.1",
+    "@google/genai": "^1.29.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@tailwindcss/vite": "^4.1.14",
+    "@types/three": "^0.184.1",
+    "@vitejs/plugin-react": "^5.0.4",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "firebase": "^12.12.1",
+    "gsap": "^3.15.0",
+    "html-to-image": "^1.11.13",
+    "lucide-react": "^0.546.0",
+    "motion": "^12.23.24",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.14.1",
+    "react-select": "^5.10.2",
+    "swiper": "^12.1.4",
+    "three": "^0.184.0",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@firebase/eslint-plugin-security-rules": "^0.0.2",
+    "@types/express": "^4.17.21",
+    "@types/node": "^22.14.0",
+    "autoprefixer": "^10.4.21",
+    "tailwindcss": "^4.1.14",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  },
+  "overrides": {
+    "node-domexception": "file:./stubs/node-domexception"
   }
-
-  await startListening(initialPort);
 }
-
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});

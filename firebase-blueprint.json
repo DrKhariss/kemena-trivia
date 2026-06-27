@@ -45,9 +45,10 @@
       "properties": {
         "heroImageUrl": { "type": "string" },
         "bioText": { "type": "string" },
+        "battleMusicUrl": { "type": "string" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["heroImageUrl", "bioText", "updatedAt"]
+      "required": ["heroImageUrl", "bioText", "battleMusicUrl", "updatedAt"]
     },
     "ArtistSlide": {
       "title": "Artist Slide",
